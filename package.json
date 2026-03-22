@@ -1,0 +1,12 @@
+{
+  "name": "timberborn",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently --names \"API,WEB\" --prefix-colors \"blue,green\" \"npm run dev:api\" \"npm run dev:web\"",
+    "dev:api": "dotnet run --project backend/src/Timberborn.Api/Timberborn.Api.csproj",
+    "dev:web": "npm --prefix frontend run dev"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.0"
+  }
+}

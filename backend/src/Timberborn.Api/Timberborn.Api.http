@@ -1,0 +1,6 @@
+@Timberborn.Api_HostAddress = http://localhost:5252
+
+GET {{Timberborn.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

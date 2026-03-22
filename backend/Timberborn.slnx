@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Timberborn.Api/Timberborn.Api.csproj" />
+    <Project Path="src/Timberborn.Core/Timberborn.Core.csproj" />
+    <Project Path="src/Timberborn.Infrastructure/Timberborn.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Timberborn.Core.Tests/Timberborn.Core.Tests.csproj" />
+  </Folder>
+</Solution>
