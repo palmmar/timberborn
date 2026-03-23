@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
-import { adaptersApi, logsApi } from '@/api/client'
+import { adaptersApi } from '@/api/client'
 import type { Adapter, AdapterLog } from '@/api/types'
 import { useLogStream } from '@/api/useLogStream'
 import { Button } from '@/components/ui/button'
@@ -22,19 +22,12 @@ export function Adapters() {
   const [error, setError] = useState('')
   const [lastStates, setLastStates] = useState<Record<string, string>>({})
 
-  const load = useCallback(() => adaptersApi.list().then(setAdapters), [])
-
-  // Seed last-known state from recent adapter logs
-  useEffect(() => {
-    logsApi.adapterLogs({ pageSize: 200 }).then(r => {
-      const map: Record<string, string> = {}
-      // logs are newest-first; first occurrence per adapter = most recent
-      for (const log of r.items) {
-        if (log.state && !map[log.adapterId]) map[log.adapterId] = log.state
-      }
-      setLastStates(map)
-    }).catch(() => {})
-  }, [])
+  const load = useCallback(() => adaptersApi.list().then(list => {
+    setAdapters(list)
+    const map: Record<string, string> = {}
+    for (const a of list) { if (a.lastState) map[a.id] = a.lastState }
+    setLastStates(map)
+  }), [])
 
   const onEventRef = useRef((log: AdapterLog) => {
     if (log.state) setLastStates(prev => ({ ...prev, [log.adapterId]: log.state! }))

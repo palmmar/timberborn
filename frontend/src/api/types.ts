@@ -4,6 +4,7 @@ export interface Adapter {
   slug: string
   description?: string
   isEnabled: boolean
+  lastState?: string
   createdAt: string
 }
 

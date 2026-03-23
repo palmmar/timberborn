@@ -48,6 +48,12 @@ public static class IngestionEndpoints
         adapterLog.TriggeredAnyRule = state is not null;
         await adapterLogs.UpdateAsync(adapterLog);
 
+        if (state is not null)
+        {
+            adapter.LastState = state;
+            await adapters.UpdateAsync(adapter);
+        }
+
         return Results.Ok(new { adapterLogId = adapterLog.Id, triggeredAnyRule = adapterLog.TriggeredAnyRule });
     }
 }
