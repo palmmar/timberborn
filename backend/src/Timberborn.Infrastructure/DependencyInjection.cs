@@ -12,7 +12,7 @@ public static class DependencyInjection
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, string connectionString)
     {
         services.AddDbContext<AppDbContext>(opt =>
-            opt.UseSqlite(connectionString));
+            opt.UseNpgsql(connectionString));
 
         services.AddScoped<IAdapterRepository, AdapterRepository>();
         services.AddScoped<ILeverRepository, LeverRepository>();

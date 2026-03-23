@@ -122,7 +122,7 @@ function ProgramEditorInner() {
   return (
     <div className="flex flex-col h-screen">
       {/* Top bar */}
-      <div className="flex items-center gap-3 px-4 py-2 border-b bg-white shrink-0">
+      <div className="flex items-center gap-3 px-4 py-2 border-b bg-background shrink-0">
         <Link to="/programs" className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
           <ArrowLeft size={14} /> Back
         </Link>
@@ -153,7 +153,7 @@ function ProgramEditorInner() {
       {/* Canvas area */}
       <div className="flex flex-1 overflow-hidden">
         {/* Left panel: adapters */}
-        <div className="w-44 border-r bg-gray-50 overflow-y-auto shrink-0 p-2">
+        <div className="w-44 border-r bg-card overflow-y-auto shrink-0 p-2">
           <div className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Adapters</div>
           {adapters.filter(a => a.isEnabled).map(a => (
             <div
@@ -163,7 +163,7 @@ function ProgramEditorInner() {
                 type: 'adapterNode',
                 data: { adapterId: a.id, name: a.name }
               }))}
-              className="mb-1 cursor-grab border-2 border-blue-300 bg-blue-50 rounded px-2 py-1 text-xs text-blue-800 hover:bg-blue-100 select-none"
+              className="mb-1 cursor-grab border-2 border-blue-700 bg-blue-950 rounded px-2 py-1 text-xs text-blue-300 hover:bg-blue-900 select-none"
             >
               {a.name}
             </div>
@@ -184,6 +184,7 @@ function ProgramEditorInner() {
             onDrop={onDrop}
             onDragOver={onDragOver}
             nodeTypes={nodeTypes}
+            colorMode="dark"
             fitView
             deleteKeyCode="Delete"
           >
@@ -194,7 +195,7 @@ function ProgramEditorInner() {
         </div>
 
         {/* Right panel: levers */}
-        <div className="w-44 border-l bg-gray-50 overflow-y-auto shrink-0 p-2">
+        <div className="w-44 border-l bg-card overflow-y-auto shrink-0 p-2">
           <div className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Levers</div>
           {levers.filter(l => l.isEnabled).map(l => (
             <div
@@ -204,7 +205,7 @@ function ProgramEditorInner() {
                 type: 'leverNode',
                 data: { leverId: l.id, name: l.name }
               }))}
-              className="mb-1 cursor-grab border-2 border-orange-300 bg-orange-50 rounded px-2 py-1 text-xs text-orange-800 hover:bg-orange-100 select-none"
+              className="mb-1 cursor-grab border-2 border-orange-700 bg-orange-950 rounded px-2 py-1 text-xs text-orange-300 hover:bg-orange-900 select-none"
             >
               {l.name}
             </div>
