@@ -12,8 +12,15 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/api': 'http://localhost:5000',
-      '/adapters/in': 'http://localhost:5000',
+      '/api': {
+        target: 'http://127.0.0.1:5000',
+        configure: (proxy) => {
+          proxy.on('proxyRes', (proxyRes) => {
+            proxyRes.headers['connection'] = 'keep-alive'
+          })
+        },
+      },
+      '/adapters/in': 'http://127.0.0.1:5000',
     },
   },
 })

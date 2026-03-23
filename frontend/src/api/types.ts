@@ -20,12 +20,15 @@ export interface Lever {
   createdAt: string
 }
 
-export interface AutomationProgram {
+export interface AutomationProgramSummary {
   id: string
   name: string
   isEnabled: boolean
-  graphJson: string
   createdAt: string
+}
+
+export interface AutomationProgram extends AutomationProgramSummary {
+  graphJson: string
 }
 
 export interface AdapterLog {

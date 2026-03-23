@@ -8,7 +8,8 @@ public static class ProgramEndpoints
     public static void MapProgramEndpoints(this IEndpointRouteBuilder app)
     {
         app.MapGet("/api/programs", async (IProgramRepository repo) =>
-            Results.Ok(await repo.GetAllAsync()));
+            Results.Ok((await repo.GetAllAsync())
+                .Select(p => new { p.Id, p.Name, p.IsEnabled, p.CreatedAt })));
 
         app.MapGet("/api/programs/{id:guid}", async (Guid id, IProgramRepository repo) =>
         {

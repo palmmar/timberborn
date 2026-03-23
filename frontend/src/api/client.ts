@@ -1,5 +1,5 @@
 import type {
-  Adapter, Lever, AutomationProgram, AdapterLog, ActionLog,
+  Adapter, Lever, AutomationProgram, AutomationProgramSummary, AdapterLog, ActionLog,
   PagedResult, DashboardData
 } from './types'
 
@@ -37,7 +37,7 @@ export const leversApi = {
 
 // Programs
 export const programsApi = {
-  list: () => request<AutomationProgram[]>('/api/programs'),
+  list: () => request<AutomationProgramSummary[]>('/api/programs'),
   get: (id: string) => request<AutomationProgram>(`/api/programs/${id}`),
   create: (data: { name: string; isEnabled: boolean; graphJson: string }) =>
     request<AutomationProgram>('/api/programs', { method: 'POST', body: JSON.stringify(data) }),

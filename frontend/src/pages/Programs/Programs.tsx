@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { programsApi } from '@/api/client'
-import type { AutomationProgram } from '@/api/types'
+import type { AutomationProgramSummary } from '@/api/types'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Dialog } from '@/components/ui/dialog'
@@ -11,18 +11,18 @@ import { Plus, Pencil, Trash2 } from 'lucide-react'
 
 export function Programs() {
   const navigate = useNavigate()
-  const [programs, setPrograms] = useState<AutomationProgram[]>([])
-  const [confirmDelete, setConfirmDelete] = useState<AutomationProgram | null>(null)
+  const [programs, setPrograms] = useState<AutomationProgramSummary[]>([])
+  const [confirmDelete, setConfirmDelete] = useState<AutomationProgramSummary | null>(null)
 
   const load = useCallback(() => programsApi.list().then(setPrograms), [])
   useEffect(() => { void load() }, [load])
 
-  const toggleEnabled = async (p: AutomationProgram) => {
+  const toggleEnabled = async (p: AutomationProgramSummary) => {
     await programsApi.setEnabled(p.id, !p.isEnabled)
     await load()
   }
 
-  const del = async (p: AutomationProgram) => {
+  const del = async (p: AutomationProgramSummary) => {
     await programsApi.delete(p.id)
     setConfirmDelete(null)
     await load()
