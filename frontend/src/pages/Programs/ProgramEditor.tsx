@@ -10,6 +10,7 @@ import '@xyflow/react/dist/style.css'
 
 import { adaptersApi, leversApi, programsApi } from '@/api/client'
 import type { Adapter, Lever } from '@/api/types'
+import { useLogStream } from '@/api/useLogStream'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { AdapterNode } from './nodes/AdapterNode'
@@ -39,6 +40,7 @@ function ProgramEditorInner() {
   const [levers, setLevers] = useState<Lever[]>([])
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [live, setLive] = useState(false)
 
   useEffect(() => {
     void adaptersApi.list().then(setAdapters)
@@ -58,6 +60,30 @@ function ProgramEditorInner() {
       }).catch(() => navigate('/programs'))
     }
   }, [id, isNew, navigate, setNodes, setEdges])
+
+  const applySignals = useCallback((signals: Record<string, boolean>) => {
+    setEdges(eds => eds.map(e => {
+      const val = signals[`${e.source}:${e.sourceHandle}`]
+      if (val === undefined) return { ...e, style: undefined, animated: false }
+      return { ...e, style: { stroke: val ? '#22c55e' : '#ef4444', strokeWidth: 2 }, animated: val }
+    }))
+  }, [setEdges])
+
+  // Initial fetch when live is toggled on
+  useEffect(() => {
+    if (!live || !id || isNew) {
+      if (!live) setEdges(eds => eds.map(e => ({ ...e, style: undefined, animated: false })))
+      return
+    }
+    void programsApi.signals(id).then(applySignals).catch(() => {})
+  }, [live, id, isNew, applySignals, setEdges])
+
+  // SSE-driven updates when live
+  useLogStream(useCallback(e => {
+    if (!live || !id || isNew) return
+    if (e.type === 'signal_update' && e.data.programId === id)
+      applySignals(e.data.signals)
+  }, [live, id, isNew, applySignals]))
 
   const onConnect = useCallback(
     (params: Connection) => setEdges(eds => addEdge({ ...params, type: 'smoothstep' }, eds)),
@@ -144,6 +170,14 @@ function ProgramEditorInner() {
           <Button size="sm" variant="outline" className="h-6 px-2 text-xs" onClick={() => addGateNode('notNode')}>NOT</Button>
         </div>
         <div className="flex-1" />
+        {!isNew && (
+          <label className="flex items-center gap-1.5 text-sm cursor-pointer select-none">
+            <div className={`w-8 h-4 rounded-full transition-colors relative ${live ? 'bg-green-500' : 'bg-muted'}`} onClick={() => setLive(l => !l)}>
+              <div className={`absolute top-0 w-4 h-4 rounded-full bg-white shadow transition-transform ${live ? 'translate-x-4' : 'translate-x-0'}`} />
+            </div>
+            <span className={live ? 'text-green-400' : 'text-muted-foreground'}>Live</span>
+          </label>
+        )}
         {error && <span className="text-xs text-destructive">{error}</span>}
         <Button size="sm" onClick={save} disabled={saving}>
           <Save size={14} className="mr-1" />{saving ? 'Saving…' : 'Save'}

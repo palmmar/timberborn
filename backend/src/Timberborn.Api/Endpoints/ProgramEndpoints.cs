@@ -1,5 +1,6 @@
 using Timberborn.Core.Interfaces;
 using Timberborn.Core.Models;
+using Timberborn.Infrastructure.Services;
 
 namespace Timberborn.Api.Endpoints;
 
@@ -44,6 +45,18 @@ public static class ProgramEndpoints
         {
             await repo.DeleteAsync(id);
             return Results.NoContent();
+        });
+
+        app.MapGet("/api/programs/{id:guid}/signals", async (Guid id, IProgramRepository programRepo, IAdapterRepository adapterRepo) =>
+        {
+            var program = await programRepo.GetByIdAsync(id);
+            if (program is null) return Results.NotFound();
+
+            var adapters = await adapterRepo.GetAllAsync();
+            var adapterLastStates = adapters.ToDictionary(a => a.Id.ToString(), a => a.LastState);
+            var signals = ProgramEngine.ComputeSignals(program.GraphJson, adapterLastStates);
+
+            return Results.Ok(signals);
         });
 
         app.MapMethods("/api/programs/{id:guid}/enabled", ["PATCH"],

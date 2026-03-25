@@ -130,12 +130,102 @@ public class ProgramEngine
                 }
 
                 case "notNode":
-                    results.AddRange(Propagate(targetNode.Id, "out", !value, graph, programId));
+                {
+                    bool notOut = !value;
+                    lock (_lock)
+                    {
+                        if (!_gateInputStates.ContainsKey(programId))
+                            _gateInputStates[programId] = new Dictionary<string, bool>();
+                        _gateInputStates[programId][$"{targetNode.Id}:out"] = notOut;
+                    }
+                    results.AddRange(Propagate(targetNode.Id, "out", notOut, graph, programId));
                     break;
+                }
             }
         }
 
         return results;
+    }
+
+    public async Task BroadcastSignalUpdatesAsync()
+    {
+        using var scope = _scopeFactory.CreateScope();
+        var programRepo = scope.ServiceProvider.GetRequiredService<IProgramRepository>();
+        var adapterRepo = scope.ServiceProvider.GetRequiredService<IAdapterRepository>();
+
+        var adapters = await adapterRepo.GetAllAsync();
+        var adapterLastStates = adapters.ToDictionary(a => a.Id.ToString(), a => a.LastState);
+
+        var programs = await programRepo.GetEnabledAsync();
+        foreach (var program in programs)
+        {
+            var signals = ComputeSignals(program.GraphJson, adapterLastStates);
+            _broadcaster.Publish(new LogEvent("signal_update", new { programId = program.Id, signals }));
+        }
+    }
+
+    public static Dictionary<string, bool> ComputeSignals(string graphJson, Dictionary<string, string?> adapterLastStates)
+    {
+        var result = new Dictionary<string, bool>();
+        GraphData? graph;
+        try
+        {
+            graph = JsonSerializer.Deserialize<GraphData>(graphJson,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        }
+        catch { return result; }
+        if (graph is null) return result;
+
+        foreach (var node in graph.Nodes.Where(n => n.Type == "adapterNode" && n.Data.AdapterId is not null))
+        {
+            var lastState = adapterLastStates.GetValueOrDefault(node.Data.AdapterId!);
+            result[$"{node.Id}:on"] = lastState == "on";
+            result[$"{node.Id}:off"] = lastState == "off";
+        }
+
+        // Iterative propagation until stable (handles arbitrary topologies)
+        bool changed = true;
+        int guard = graph.Nodes.Count + 1;
+        while (changed && guard-- > 0)
+        {
+            changed = false;
+            foreach (var edge in graph.Edges)
+            {
+                if (!result.TryGetValue($"{edge.Source}:{edge.SourceHandle}", out bool srcVal)) continue;
+                var target = graph.Nodes.FirstOrDefault(n => n.Id == edge.Target);
+                if (target is null) continue;
+
+                switch (target.Type)
+                {
+                    case "andNode":
+                    case "orNode":
+                    {
+                        string inKey = $"{target.Id}:{edge.TargetHandle}";
+                        if (!result.TryGetValue(inKey, out bool prev) || prev != srcVal)
+                        { result[inKey] = srcVal; changed = true; }
+
+                        int inputCount = target.Data.InputCount ?? 2;
+                        bool newOut = target.Type == "andNode"
+                            ? Enumerable.Range(0, inputCount).All(i => result.TryGetValue($"{target.Id}:in{i}", out var v) && v)
+                            : Enumerable.Range(0, inputCount).Any(i => result.TryGetValue($"{target.Id}:in{i}", out var v) && v);
+                        string outKey = $"{target.Id}:out";
+                        if (!result.TryGetValue(outKey, out bool prevOut) || prevOut != newOut)
+                        { result[outKey] = newOut; changed = true; }
+                        break;
+                    }
+                    case "notNode":
+                    {
+                        string outKey = $"{target.Id}:out";
+                        bool notOut = !srcVal;
+                        if (!result.TryGetValue(outKey, out bool prevOut) || prevOut != notOut)
+                        { result[outKey] = notOut; changed = true; }
+                        break;
+                    }
+                }
+            }
+        }
+
+        return result;
     }
 
     private record GraphData(List<GraphNode> Nodes, List<GraphEdge> Edges);

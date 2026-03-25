@@ -46,6 +46,7 @@ export const programsApi = {
   delete: (id: string) => request<void>(`/api/programs/${id}`, { method: 'DELETE' }),
   setEnabled: (id: string, isEnabled: boolean) =>
     request<AutomationProgram>(`/api/programs/${id}/enabled`, { method: 'PATCH', body: JSON.stringify({ isEnabled }) }),
+  signals: (id: string) => request<Record<string, boolean>>(`/api/programs/${id}/signals`),
 }
 
 // Logs

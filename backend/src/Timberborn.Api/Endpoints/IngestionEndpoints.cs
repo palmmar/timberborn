@@ -52,6 +52,7 @@ public static class IngestionEndpoints
         {
             adapter.LastState = state;
             await adapters.UpdateAsync(adapter);
+            await engine.BroadcastSignalUpdatesAsync();
         }
 
         return Results.Ok(new { adapterLogId = adapterLog.Id, triggeredAnyRule = adapterLog.TriggeredAnyRule });
