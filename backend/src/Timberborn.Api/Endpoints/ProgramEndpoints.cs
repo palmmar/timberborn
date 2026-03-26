@@ -47,15 +47,12 @@ public static class ProgramEndpoints
             return Results.NoContent();
         });
 
-        app.MapGet("/api/programs/{id:guid}/signals", async (Guid id, IProgramRepository programRepo, IAdapterRepository adapterRepo) =>
+        app.MapGet("/api/programs/{id:guid}/signals", async (Guid id, IProgramRepository programRepo, ProgramEngine engine) =>
         {
             var program = await programRepo.GetByIdAsync(id);
             if (program is null) return Results.NotFound();
 
-            var adapters = await adapterRepo.GetAllAsync();
-            var adapterLastStates = adapters.ToDictionary(a => a.Id.ToString(), a => a.LastState);
-            var signals = ProgramEngine.ComputeSignals(program.GraphJson, adapterLastStates);
-
+            var signals = await engine.GetSignalsAsync(id);
             return Results.Ok(signals);
         });
 

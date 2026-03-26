@@ -17,6 +17,7 @@ import { AdapterNode } from './nodes/AdapterNode'
 import { LeverNode } from './nodes/LeverNode'
 import { AndNode, OrNode } from './nodes/GateNode'
 import { NotNode } from './nodes/NotNode'
+import { DelayNode } from './nodes/DelayNode'
 import { ArrowLeft, Save } from 'lucide-react'
 
 const nodeTypes = {
@@ -25,6 +26,7 @@ const nodeTypes = {
   andNode: AndNode,
   orNode: OrNode,
   notNode: NotNode,
+  delayNode: DelayNode,
 }
 
 function ProgramEditorInner() {
@@ -117,12 +119,18 @@ function ProgramEditorInner() {
     setNodes(nds => [...nds, newNode])
   }, [setNodes])
 
-  const addGateNode = (type: 'andNode' | 'orNode' | 'notNode') => {
+  const addGateNode = (type: 'andNode' | 'orNode' | 'notNode' | 'delayNode') => {
+    const dataMap: Record<string, Record<string, unknown>> = {
+      andNode: { inputCount: 2 },
+      orNode: { inputCount: 2 },
+      notNode: {},
+      delayNode: { delaySeconds: 5 },
+    }
     const newNode: Node = {
       id: `${type}-${Date.now()}`,
       type,
       position: { x: 200, y: 100 + nodes.length * 60 },
-      data: type === 'notNode' ? {} : { inputCount: 2 },
+      data: dataMap[type] ?? {},
     }
     setNodes(nds => [...nds, newNode])
   }
@@ -168,6 +176,7 @@ function ProgramEditorInner() {
           <Button size="sm" variant="outline" className="h-6 px-2 text-xs" onClick={() => addGateNode('andNode')}>AND</Button>
           <Button size="sm" variant="outline" className="h-6 px-2 text-xs" onClick={() => addGateNode('orNode')}>OR</Button>
           <Button size="sm" variant="outline" className="h-6 px-2 text-xs" onClick={() => addGateNode('notNode')}>NOT</Button>
+          <Button size="sm" variant="outline" className="h-6 px-2 text-xs" onClick={() => addGateNode('delayNode')}>DELAY</Button>
         </div>
         <div className="flex-1" />
         {!isNew && (
