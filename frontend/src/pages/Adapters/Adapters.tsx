@@ -88,7 +88,7 @@ export function Adapters() {
                 <div className="flex items-center gap-2">
                   <span className="font-medium">{a.name}</span>
                   {lastStates[a.id] && (
-                    <Badge variant={lastStates[a.id] === 'on' ? 'success' : 'secondary'} className="text-xs">{lastStates[a.id]}</Badge>
+                    <Badge variant={lastStates[a.id] === 'on' ? 'success' : 'destructive'} className="text-xs">{lastStates[a.id]}</Badge>
                   )}
                 </div>
                 {a.description && <div className="text-xs text-muted-foreground">{a.description}</div>}

@@ -49,7 +49,10 @@ public class ProgramEngine
 
             foreach (var adapterNode in adapterNodes)
             {
-                var actions = Propagate(adapterNode.Id, state, true, graph, program.Id);
+                bool isOn = state == "on";
+                var actions = Propagate(adapterNode.Id, "on", isOn, graph, program.Id)
+                    .Concat(Propagate(adapterNode.Id, "off", !isOn, graph, program.Id))
+                    .ToList();
 
                 foreach (var (leverId, leverState) in actions)
                 {

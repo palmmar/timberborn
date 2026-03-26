@@ -43,7 +43,7 @@ export function History() {
     if (e.type === 'adapter_log') {
       setAdapterLogs(prev => [e.data as AdapterLog, ...prev].slice(0, PAGE_SIZE))
       setAdapterTotal(t => t + 1)
-    } else {
+    } else if (e.type === 'action_log') {
       setActionLogs(prev => [e.data as ActionLog, ...prev].slice(0, PAGE_SIZE))
       setActionTotal(t => t + 1)
     }
@@ -52,7 +52,7 @@ export function History() {
     if (e.type === 'adapter_log') {
       setAdapterLogs(prev => [e.data as AdapterLog, ...prev].slice(0, PAGE_SIZE))
       setAdapterTotal(t => t + 1)
-    } else {
+    } else if (e.type === 'action_log') {
       setActionLogs(prev => [e.data as ActionLog, ...prev].slice(0, PAGE_SIZE))
       setActionTotal(t => t + 1)
     }
